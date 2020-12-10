@@ -36,6 +36,7 @@ public class Day10 {
             Map<Long, Long> possibilities = new HashMap<>();
             numbers.forEach(n -> possibilities.put(n, 0L));
 
+            /* algo propre pour la partie 2 */
             possibilities.keySet().stream().sorted(Collections.reverseOrder()).forEach(number -> {
                 if (number != max) {
                     if (number + 1 == max) {
@@ -90,6 +91,7 @@ public class Day10 {
         }
     }
 
+    /* Algo brutal */
     private static void countPath(long value, List<Long> numbers, long max) {
 
         if (value != max) {
@@ -129,11 +131,4 @@ public class Day10 {
             searchDifferences(value, differences, numbers);
         }
     }
-
-
-    //On prend le min
-    //On cherche le +1, ou + 2, ou +3
-    //Si on trouve, on recommence la recherche avec la base le nouveau
-    //On arrête si le current est le max
-    //On stock dans un compteur les diff de 1 et de 3
 }
