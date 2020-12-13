@@ -1,8 +1,8 @@
-import day.Day12;
+import day.Day13;
 
 public class AdventCode {
 
     public static void main(String[] args) {
-        Day12.solve();
+        Day13.solve();
     }
 }
