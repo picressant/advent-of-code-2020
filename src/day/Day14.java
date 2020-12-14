@@ -1,10 +1,11 @@
 package day;
 
-import javafx.util.Pair;
-
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -15,7 +16,7 @@ public class Day14 {
             File myObj = new File("/home/pierre/work/perso/advent.input");
             Scanner myReader = new Scanner(myObj);
 
-            Map<Integer, String> memories = new HashMap<>();
+            Map<String, Long> memories = new HashMap<>();
             String currentMask = "";
 
             while (myReader.hasNextLine()) {
@@ -32,10 +33,12 @@ public class Day14 {
                         int memoryPlace = Integer.parseInt(matcher.group(1));
                         long value = Long.parseLong(matcher.group(2));
 
-                        String binary = Long.toBinaryString(value);
+                        System.out.println("memory:" + memoryPlace + " = " + memoryPlace + " (" + Long.toBinaryString(memoryPlace) + ")");
+                        String binary = Long.toBinaryString(memoryPlace);
                         binary = String.format("%1$" + currentMask.length() + "s", binary).replace(' ', '0');
 
-                        memories.put(memoryPlace, applyMask(binary, currentMask));
+
+                        applyMask(binary, currentMask).forEach(address -> memories.put(address, value));
 
                     }
                 }
@@ -43,8 +46,8 @@ public class Day14 {
             }
             myReader.close();
 
-            System.out.println(memories);
-            long total = memories.entrySet().stream().mapToLong(integerStringEntry -> Long.parseLong(integerStringEntry.getValue(), 2)).sum();
+            long total = memories.values().stream()
+                    .mapToLong(val -> val).sum();
             System.out.println("total: " + total);
 
         }
@@ -54,16 +57,42 @@ public class Day14 {
         }
     }
 
-    private static String applyMask(String value, String mask) {
-        //System.out.println("applying " + mask + " to " + value);
-        String newValue = "";
-        for(int i = 0; i < mask.length(); i++) {
-            if (mask.charAt(i) == 'X')
-                newValue += value.substring(i, i+1);
-            else
-                newValue += mask.substring(i, i+1);
+    private static HashSet<String> applyMask(String value, String mask) {
+        HashSet<String> values = new HashSet<>();
+        values.add(value);
+        System.out.println("Writting " + value);
+        return applyMaskPos(0, mask, values);
+    }
+
+    private static String changeChar(String value, char c, int pos) {
+        StringBuilder sb = new StringBuilder(value);
+        sb.setCharAt(pos, c);
+        return sb.toString();
+    }
+
+    private static HashSet<String> applyMaskPos(int pos, String mask, HashSet<String> values) {
+        HashSet<String> newValues = new HashSet<>();
+        for (String value : values) {
+            if (mask.charAt(pos) == '1') {
+                newValues.add(changeChar(value, '1', pos));
+            }
+            else if (mask.charAt(pos) == 'X') {
+                newValues.add(changeChar(value, '1', pos));
+                newValues.add(changeChar(value, '0', pos));
+            }
+            else {
+                newValues.add(value);
+            }
         }
 
-        return newValue;
+        pos++;
+        if (pos < mask.length()) {
+            return applyMaskPos(pos, mask, newValues);
+        }
+        else {
+            return newValues;
+        }
+
+
     }
 }
