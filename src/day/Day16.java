@@ -60,26 +60,93 @@ public class Day16 {
             System.out.println("ticket: " + myTicket);
             System.out.println("others: " + otherTickets);
 
-            int diff = 0;
+            List<List<Integer>> validTickets = new ArrayList<>();
+            validTickets.add(myTicket);
             for (List<Integer> ticket : otherTickets) {
+                boolean valid = true;
                 for (Integer val : ticket) {
-                    if (!isAnyRuleValid(val, rules))
-                        diff += val;
+                    if (!isAnyRuleValid(val, rules)) {
+                        valid = false;
+                        break;
+                    }
+                }
+
+                if (valid) {
+                    validTickets.add(ticket);
                 }
             }
 
-            System.out.println("res: " + diff);
+            System.out.println("validTickets: " + validTickets.size());
+
+            Map<String, List<Integer>> ruleOrder = new HashMap<>();
+
+
+            for (Map.Entry<String, List<Pair<Integer, Integer>>> entry : rules.entrySet()) {
+                String ruleKey = entry.getKey();
+                List<Pair<Integer, Integer>> rulePairs = entry.getValue();
+                int pos = 0;
+                ruleOrder.put(ruleKey, new ArrayList<>());
+                System.out.println("testing " + ruleKey);
+                while (pos < myTicket.size()) {
+                    boolean allValid = true;
+                    for (List<Integer> validOtherTicket : validTickets) {
+                        if (!isRuleValid(validOtherTicket.get(pos), rulePairs)) {
+                            System.out.println(validOtherTicket.get(pos) + " not valid for " + rulePairs);
+                            allValid = false;
+                        }
+                    }
+
+                    if (allValid) {
+                        ruleOrder.get(ruleKey).add(pos);
+                    }
+
+                    pos++;
+
+                }
+            }
+            System.out.println(ruleOrder);
+
+            while (!allAtOne(ruleOrder)) {
+                for (Map.Entry<String, List<Integer>> entry : ruleOrder.entrySet()) {
+                    if (entry.getValue().size() == 1) {
+                        System.out.println("cleaning " + entry.getValue());
+                        for (Map.Entry<String, List<Integer>> entryIn : ruleOrder.entrySet()) {
+                            if (!entry.getKey().equals(entryIn.getKey())) {
+                                entryIn.getValue().remove(entry.getValue().get(0));
+                            }
+                        }
+                    }
+                }
+            }
+
+            System.out.println(ruleOrder);
+            long res = 1;
+            for (Map.Entry<String, List<Integer>> entry : ruleOrder.entrySet()) {
+                String key = entry.getKey();
+                List<Integer> value = entry.getValue();
+                if (key.startsWith("departure")) {
+                    res *= myTicket.get(value.get(0));
+                }
+            }
+
+            System.out.println("res: " + res);
         }
         catch (FileNotFoundException e) {
             System.out.println("An error occurred.");
             e.printStackTrace();
         }
+
     }
 
-    private static  boolean isAnyRuleValid(int val, Map<String, List<Pair<Integer, Integer>>> rules) {
+    private static boolean allAtOne(Map<String, List<Integer>> ruleOrder) {
+        return ruleOrder.keySet().stream().noneMatch(key -> ruleOrder.get(key).size() > 1);
+    }
+
+    private static boolean isAnyRuleValid(int val, Map<String, List<Pair<Integer, Integer>>> rules) {
         for (String rule : rules.keySet()) {
-            if (isRuleValid(val, rules.get(rule)))
+            if (isRuleValid(val, rules.get(rule))) {
                 return true;
+            }
         }
 
         return false;
