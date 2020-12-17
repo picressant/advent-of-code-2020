@@ -1,10 +1,11 @@
 package day;
 
-import javafx.util.Pair;
-
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Scanner;
 
 public class Day17 {
 
@@ -23,13 +24,15 @@ public class Day17 {
             System.out.println(input);
             myReader.close();
 
-            char[][][] grid = new char[input.size() + 20][input.size() + 20][input.size() + 20];
+            char[][][][] grid = new char[input.size() + 20][input.size() + 20][input.size() + 20][input.size() + 20];
 
             //Init de la grille
-            for (int z = 0; z < grid.length; z++) {
-                for (int y = 0; y < grid.length; y++) {
-                    for (int x = 0; x < grid.length; x++) {
-                        grid[z][y][x] = '.';
+            for (int w = 0; w < grid.length; w++) {
+                for (int z = 0; z < grid.length; z++) {
+                    for (int y = 0; y < grid.length; y++) {
+                        for (int x = 0; x < grid.length; x++) {
+                            grid[w][z][y][x] = '.';
+                        }
                     }
                 }
             }
@@ -39,24 +42,26 @@ public class Day17 {
                 for (int x = 0; x < input.get(0).size(); x++) {
                     char c = input.get(y).get(x).charAt(0);
                     // grid[middle z][middle y - half of input length][middle x - half input length]
-                    grid[grid.length / 2 - input.size() / 2][grid.length / 2 - input.size() / 2 + y][grid.length / 2
+                    grid[grid.length / 2 - input.size() / 2][grid.length / 2 - input.size() / 2][grid.length / 2 - input.size() / 2 + y][grid.length / 2
                             + x] = c;
                 }
             }
 
             int cycle = 1;
             while (cycle <= 6) {
-                char[][][] copy = new char[grid.length][grid.length][grid.length];
-                for (int z = 0; z < grid.length; z++) {
-                    for (int y = 0; y < grid.length; y++) {
-                        for (int x = 0; x < grid.length; x++) {
-                            char c = grid[z][y][x];
-                            int actives = countActiveNeighboors(grid, z, y, x);
-                            if (c == '#') {
-                                copy[z][y][x] = (actives == 2 || actives == 3) ? '#' : '.';
-                            }
-                            else {
-                                copy[z][y][x] = (actives == 3) ? '#' : '.';
+                char[][][][] copy = new char[grid.length][grid.length][grid.length][grid.length];
+                for (int w = 0; w < grid.length; w++) {
+                    for (int z = 0; z < grid.length; z++) {
+                        for (int y = 0; y < grid.length; y++) {
+                            for (int x = 0; x < grid.length; x++) {
+                                char c = grid[w][z][y][x];
+                                int actives = countActiveNeighboors(grid, w, z, y, x);
+                                if (c == '#') {
+                                    copy[w][z][y][x] = (actives == 2 || actives == 3) ? '#' : '.';
+                                }
+                                else {
+                                    copy[w][z][y][x] = (actives == 3) ? '#' : '.';
+                                }
                             }
                         }
                     }
@@ -64,17 +69,20 @@ public class Day17 {
                 grid = copy;
 
                 System.out.println("cycle: " + cycle);
-                show(grid);
+                //show(grid);
                 cycle++;
 
             }
 
             int actives = 0;
-            for (int z = 0; z < grid.length; z++) {
-                for (int y = 0; y < grid.length; y++) {
-                    for (int x = 0; x < grid.length; x++) {
-                        if (grid[z][y][x] == '#')
-                            actives++;
+            for (int w = 0; w < grid.length; w++) {
+                for (int z = 0; z < grid.length; z++) {
+                    for (int y = 0; y < grid.length; y++) {
+                        for (int x = 0; x < grid.length; x++) {
+                            if (grid[w][z][y][x] == '#') {
+                                actives++;
+                            }
+                        }
                     }
                 }
             }
@@ -87,24 +95,28 @@ public class Day17 {
         }
     }
 
-    private static int countActiveNeighboors(char[][][] grid, int z, int y, int x) {
+    private static int countActiveNeighboors(char[][][][] grid, int w, int z, int y, int x) {
         int count = 0;
-        for (int zi = -1; zi <= 1; zi++) {
-            for (int yi = -1; yi <= 1; yi++) {
-                for (int xi = -1; xi <= 1; xi++) {
-                    int zj = zi + z;
-                    int yj = yi + y;
-                    int xj = xi + x;
+        for (int wi = -1; wi <= 1; wi++) {
+            for (int zi = -1; zi <= 1; zi++) {
+                for (int yi = -1; yi <= 1; yi++) {
+                    for (int xi = -1; xi <= 1; xi++) {
+                        int wj = wi + w;
+                        int zj = zi + z;
+                        int yj = yi + y;
+                        int xj = xi + x;
 
-                    if (zj >= 0 && yj >= 0 && xj >= 0) {
-                        if (zj < grid.length && yj < grid.length && xj < grid.length) {
-                            if (!(zi == 0 && yi == 0 && xi == 0)) {
-                                if (grid[zj][yj][xj] == '#')
-                                    count++;
+                        if (zj >= 0 && yj >= 0 && xj >= 0 && wj > 0) {
+                            if (zj < grid.length && yj < grid.length && xj < grid.length && wj < grid.length) {
+                                if (!(zi == 0 && yi == 0 && xi == 0 && wi == 0)) {
+                                    if (grid[wj][zj][yj][xj] == '#') {
+                                        count++;
+                                    }
+                                }
                             }
                         }
-                    }
 
+                    }
                 }
             }
         }
