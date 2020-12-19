@@ -64,7 +64,7 @@ public class Day19 {
                 }
             }
 
-            String regex = "^" + evaluateRule(rules, rules.get(0)) + "$";
+            String regex = "^" + evaluateRule(rules, 0) + "$";
             Pattern pattern = Pattern.compile(regex);
 
             messages.stream().filter(pattern.asPredicate()).forEach(System.out::println);
@@ -79,33 +79,54 @@ public class Day19 {
         }
     }
 
-    private static String evaluateRule(Map<Integer, Rule> rules, Rule rule) {
+    private static String evaluateRule(Map<Integer, Rule> rules, int ruleId) {
+        Rule rule = rules.get(ruleId);
         if (!rule.value.equals("")) {
             return rule.value;
         }
         else {
-            String res = "(";
-            res += rule.otherRule.stream().map(innerRules -> evaluateOtherRules(innerRules, rules)).collect(Collectors.joining("|"));
-            res += ")";
+            if (ruleId != 11) {
+                String res = "(";
+                res += rule.otherRule.stream().map(innerRules -> evaluateOtherRules(innerRules, rules)).collect(Collectors.joining("|"));
+                res += ")";
+                if (ruleId == 8) {
+                    res += "+";
+                }
 
-            return res;
+                return res;
+            }
+            else {
+                String res = "(";
+                res += evaluateOtherRules(Arrays.asList(42, 31), rules);
+                res += "|";
+                res += "(";
+                for (int i = 1; i < 50; i++) {
+                    res += evaluateOtherRules(Arrays.asList(42),rules) + "{" + i + "}";
+                    res += evaluateOtherRules(Arrays.asList(31), rules) + "{" + i + "}";
+                    res += "|";
+                }
+                res = removeLastCharacter(res);
+                res += ")";
+                res += ")";
+
+                return res;
+            }
         }
     }
 
     private static String evaluateOtherRules(List<Integer> otherRules, Map<Integer, Rule> rules) {
         String res = "";
         for (Integer ruleId : otherRules) {
-            res += evaluateRule(rules, rules.get(ruleId));
+            res += evaluateRule(rules, ruleId);
         }
 
         return res;
     }
-
-    // Rule --> soit une liste d'autre numéro
-    // --> Soit une lettre
-
-    //pour construire la rule 0
-    // Si on a une lettre
-
-    //Pour chaque rule avec un choix, on ajoute des parenthèses. A la fin on doit avoir une regex
+    public static String removeLastCharacter(String str) {
+        String result = Optional.ofNullable(str)
+                .filter(sStr -> sStr.length() != 0)
+                .map(sStr -> sStr.substring(0, sStr.length() - 1))
+                .orElse(str);
+        return result;
+    }
 }
